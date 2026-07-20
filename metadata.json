@@ -1,0 +1,6 @@
+{
+  "name": "AI Motorcycle Trip Budget Planner",
+  "description": "An interactive budget planner made specifically for motorcycle riders to calculate fuel, tolls, meals, lodging, and emergency expenses, complete with an AI Budget Assistant for personalized suggestions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
