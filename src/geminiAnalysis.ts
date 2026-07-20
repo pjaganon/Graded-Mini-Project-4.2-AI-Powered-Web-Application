@@ -107,7 +107,7 @@ export async function generateTripAnalysis(trip: AnalyzeRequest): Promise<string
   });
 
   const response = await ai.models.generateContent({
-    model: "gemini-3.1-flash-lite",
+    model: "gemini-3.5-flash",
     contents: buildAnalysisPrompt(trip),
   });
 
