@@ -109,8 +109,20 @@ export const BudgetChart: React.FC<BudgetChartProps> = ({ expenses }) => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] text-zinc-500 font-sans tracking-wider uppercase font-semibold">Total Budget</span>
-                <span className="text-xl sm:text-2xl font-black text-white font-sans mt-0.5 italic tracking-tight">
+                <span
+                  className="text-[10px] text-zinc-300 font-sans tracking-wider uppercase font-semibold"
+                  style={{ textShadow: "0 0 2px #000, 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000" }}
+                >
+                  Total Budget
+                </span>
+                <span
+                  className="text-xl sm:text-2xl font-black text-white font-sans mt-0.5 italic tracking-tight"
+                  style={{
+                    WebkitTextStroke: "3px #000",
+                    paintOrder: "stroke fill",
+                    textShadow: "0 3px 4px rgba(0,0,0,0.9)",
+                  }}
+                >
                   ₱{total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
