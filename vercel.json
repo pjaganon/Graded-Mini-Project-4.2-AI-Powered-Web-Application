@@ -1,12 +1,4 @@
 {
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
-  "functions": {
-    "api/gemini/analyze.ts": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]

@@ -1,16 +1,8 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
- * Web-standard Vercel handler (ESM-safe with package.json "type": "module").
- */
-
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
 export const config = {
   maxDuration: 60,
-  runtime: "nodejs",
 };
 
 const expenseAmount = z.number().finite().min(0).max(10_000_000);
@@ -41,9 +33,7 @@ const analyzeRequestSchema = z.object({
   customNotes: z.string().max(2000).optional().default(""),
 });
 
-type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>;
-
-function sanitizeForPrompt(text: string, maxLength = 500): string {
+function sanitizeForPrompt(text, maxLength = 500) {
   return text
     .slice(0, maxLength)
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
@@ -51,7 +41,7 @@ function sanitizeForPrompt(text: string, maxLength = 500): string {
     .trim();
 }
 
-function getGeminiApiKey(): string | null {
+function getGeminiApiKey() {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (!apiKey || apiKey === "your-gemini-api-key-here") {
     return null;
@@ -59,7 +49,7 @@ function getGeminiApiKey(): string | null {
   return apiKey;
 }
 
-function buildAnalysisPrompt(trip: AnalyzeRequest): string {
+function buildAnalysisPrompt(trip) {
   const tripName = sanitizeForPrompt(trip.tripName, 200);
   const motorcycleModel = sanitizeForPrompt(trip.motorcycleModel, 200);
   const ridingStyle = sanitizeForPrompt(trip.ridingStyle, 50);
@@ -136,62 +126,64 @@ Please provide a structured, beautifully formatted response in Markdown addressi
 Make your tone professional, authoritative, and encouraging. Use elegant spacing, bold headings, and clear bullet points. Refer to real Philippine motorcycling cultural terms like "kamote riders", "vulcanizing shop", "carinderia", "kapote", "RoRo ferry", and "RFID".`;
 }
 
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== "POST") {
-    return Response.json({ error: "Method not allowed." }, { status: 405 });
-  }
+export default {
+  async fetch(request) {
+    if (request.method !== "POST") {
+      return Response.json({ error: "Method not allowed." }, { status: 405 });
+    }
 
-  try {
-    let body: unknown;
     try {
-      body = await request.json();
-    } catch {
-      return Response.json({ error: "Invalid JSON body." }, { status: 400 });
-    }
+      let body;
+      try {
+        body = await request.json();
+      } catch {
+        return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+      }
 
-    const parsed = analyzeRequestSchema.safeParse(body);
-    if (!parsed.success) {
-      return Response.json(
-        { error: "Invalid request. Check trip fields and try again." },
-        { status: 400 }
-      );
-    }
+      const parsed = analyzeRequestSchema.safeParse(body);
+      if (!parsed.success) {
+        return Response.json(
+          { error: "Invalid request. Check trip fields and try again." },
+          { status: 400 }
+        );
+      }
 
-    const apiKey = getGeminiApiKey();
-    if (!apiKey) {
-      return Response.json(
-        {
-          error:
-            "AI analysis is unavailable. Set GEMINI_API_KEY in Vercel Environment Variables (Production), then Redeploy.",
+      const apiKey = getGeminiApiKey();
+      if (!apiKey) {
+        return Response.json(
+          {
+            error:
+              "AI analysis is unavailable. Set GEMINI_API_KEY in Vercel Environment Variables (Production), then Redeploy.",
+          },
+          { status: 503 }
+        );
+      }
+
+      const ai = new GoogleGenAI({
+        apiKey,
+        httpOptions: {
+          headers: {
+            "User-Agent": "aistudio-build",
+          },
         },
-        { status: 503 }
-      );
+      });
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: buildAnalysisPrompt(parsed.data),
+      });
+
+      const analysis = response.text || "No analysis generated. Please try again.";
+      return Response.json({ analysis });
+    } catch (error) {
+      console.error("Gemini API error:", error);
+      const message = error instanceof Error ? error.message : "";
+      const safeMessage = /api key|permission|unauthorized|401|403/i.test(message)
+        ? "Gemini rejected the API key. Check GEMINI_API_KEY in Vercel and regenerate the key if needed."
+        : /model|not found|404/i.test(message)
+          ? "Gemini model is unavailable. Please try again later."
+          : "Failed to generate analysis. Please try again later.";
+      return Response.json({ error: safeMessage }, { status: 500 });
     }
-
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: buildAnalysisPrompt(parsed.data),
-    });
-
-    const analysis = response.text || "No analysis generated. Please try again.";
-    return Response.json({ analysis });
-  } catch (error: unknown) {
-    console.error("Gemini API error:", error);
-    const message = error instanceof Error ? error.message : "";
-    const safeMessage = /api key|permission|unauthorized|401|403/i.test(message)
-      ? "Gemini rejected the API key. Check GEMINI_API_KEY in Vercel and regenerate the key if needed."
-      : /model|not found|404/i.test(message)
-        ? "Gemini model is unavailable. Please try again later."
-        : "Failed to generate analysis. Please try again later.";
-    return Response.json({ error: safeMessage }, { status: 500 });
-  }
-}
+  },
+};
