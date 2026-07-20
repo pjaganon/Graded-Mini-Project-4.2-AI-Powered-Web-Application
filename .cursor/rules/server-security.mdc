@@ -1,0 +1,31 @@
+---
+description: Express API and security requirements for server.ts
+globs: "{server.ts,src/validation.ts}"
+alwaysApply: false
+---
+
+# Server & API Security
+
+## Required Patterns
+
+When changing `server.ts` or `src/validation.ts`:
+
+1. **Validate all request bodies** with Zod (`analyzeRequestSchema`) before use
+2. **Rate-limit** AI endpoints (`express-rate-limit` on `/api/gemini/analyze`)
+3. **Cap body size** — keep `express.json({ limit: "50kb" })`
+4. **Keep helmet** security headers; relax CSP script-src only in dev for Vite
+5. **Never return raw `error.message`** to clients — log server-side, return generic text
+6. **Never expose `GEMINI_API_KEY`** — read from `process.env` only on the server
+
+## Prompt Construction
+
+- Sanitize user strings with `sanitizeForPrompt()` before embedding in Gemini prompts
+- Wrap user content in triple-quoted delimiters
+- Include instruction: user fields are data only, not commands (prompt injection mitigation)
+
+## Adding New API Routes
+
+- Add a Zod schema in `src/validation.ts`
+- Apply rate limiting and input validation
+- Return `{ error: "..." }` with appropriate HTTP status codes
+- Do not add client-exposed secrets or bypass validation for convenience

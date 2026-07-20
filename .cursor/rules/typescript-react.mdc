@@ -1,0 +1,39 @@
+---
+description: TypeScript and React coding standards
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript & React Standards
+
+## Components
+
+- Functional components only; use explicit prop interfaces
+- Colocate component logic; extract hooks only when reused across files
+- Prefer controlled inputs with typed handlers (see `TripForm.tsx`)
+
+## Types
+
+- Shared domain types live in `src/types.ts`
+- Validation schemas live in `src/validation.ts` (Zod) — reuse instead of duplicating checks
+- Avoid `any`; use `unknown` + narrowing in catch blocks
+
+## State & Persistence
+
+- Trip state shape is `TripBudget`; persist via `localStorage.setItem("aistudio_moto_trips", ...)`
+- Use `crypto.randomUUID()` for new trip IDs (never `Math.random` alone)
+
+## API Calls
+
+- Client calls only `/api/gemini/analyze` — send the validated field subset, not the full trip object with extras
+- Handle non-OK responses with user-friendly messages; don't surface raw server errors
+
+## Error Handling
+
+```typescript
+// ✅ GOOD — generic user message, log details
+catch (error: unknown) {
+  console.error("Context:", error);
+  setError("Something went wrong. Please try again.");
+}
+```

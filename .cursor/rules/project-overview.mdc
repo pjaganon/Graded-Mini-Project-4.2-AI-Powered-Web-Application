@@ -1,0 +1,40 @@
+---
+description: Core project context for MotoBudget AI motorcycle trip planner
+alwaysApply: true
+---
+
+# MotoBudget AI — Project Overview
+
+Philippine-focused motorcycle trip budget planner with an AI Budget Assistant (Gemini).
+
+## Stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Recharts, react-markdown
+- **Backend**: Express (`server.ts`), Google GenAI SDK, Zod validation
+- **Storage**: Client-side `localStorage` (`aistudio_moto_trips` key)
+- **Secrets**: `GEMINI_API_KEY` in `.env` / AI Studio Secrets — server-side only, never client bundle
+
+## Structure
+
+```
+server.ts              # Express API + Vite middleware (dev) or static (prod)
+src/
+  App.tsx              # Root state, localStorage, import/export
+  types.ts             # TripBudget, expense types, presets
+  validation.ts        # Zod schemas shared by server + client import
+  components/          # TripForm, SavedTrips, AIAssistant, BudgetChart, TripComparer
+```
+
+## Commands
+
+- `npm run dev` — start Express + Vite dev server (port 3000)
+- `npm run build` — Vite client build + esbuild server bundle
+- `npm run start` — production server
+- `npm run lint` — `tsc --noEmit`
+
+## Conventions
+
+- Minimize scope; match existing dark UI (`#0A0A0A`, `#151515`, amber accents)
+- Do not commit `.env` files or expose API keys
+- Add validation in `src/validation.ts` for any new API or import fields
+- Do not modify Vite HMR/watch config tied to `DISABLE_HMR` (AI Studio requirement)

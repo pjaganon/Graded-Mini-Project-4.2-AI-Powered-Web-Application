@@ -1,0 +1,38 @@
+---
+description: UI, styling, and markdown rendering patterns for React components
+globs: "src/**/*.tsx"
+alwaysApply: false
+---
+
+# UI & Component Patterns
+
+## Visual Style
+
+- Dark theme: backgrounds `#0A0A0A`, `#0F0F0F`, `#151515`; borders `#222`
+- Accent: amber (`amber-500`, `amber-600`) for CTAs and highlights
+- Currency: Philippine peso (`₱`) with `toLocaleString(undefined, { minimumFractionDigits: 2 })`
+- Icons: `lucide-react`
+
+## Component Layout
+
+- Rounded cards: `rounded-2xl border border-[#222] p-6`
+- Form labels: `text-[10px] font-bold text-zinc-500 uppercase tracking-wider`
+- Toasts: fixed top-right, auto-dismiss ~4s (see `App.tsx`)
+
+## AI Markdown Rendering
+
+When rendering AI output in `AIAssistant.tsx`:
+
+- Use `react-markdown` with `rehype-sanitize`
+- Block dangerous URL schemes via `urlTransform` (`javascript:`, `data:`, `vbscript:`)
+- Never use `dangerouslySetInnerHTML` for AI content
+
+## Import/Export
+
+- Export: JSON download via data URI
+- Import: enforce `MAX_IMPORT_FILE_BYTES` (1 MB) and `parseImportedTrips()` validation
+- Accept only `.json` files; reset file input after import
+
+## Domain Context
+
+Content is Philippines-specific: expressway rules (400cc+), RFID tolls, carinderias, vulcanizing shops, RoRo ferries, Cordillera routes. Keep copy and AI prompts aligned with this context.
