@@ -2,15 +2,15 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * Self-contained Vercel serverless handler (avoids Vite tsconfig / src import issues).
+ * Web-standard Vercel handler (ESM-safe with package.json "type": "module").
  */
 
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 
 export const config = {
   maxDuration: 60,
+  runtime: "nodejs",
 };
 
 const expenseAmount = z.number().finite().min(0).max(10_000_000);
@@ -57,17 +57,6 @@ function getGeminiApiKey(): string | null {
     return null;
   }
   return apiKey;
-}
-
-function parseBody(req: VercelRequest): unknown {
-  if (typeof req.body === "string") {
-    try {
-      return JSON.parse(req.body);
-    } catch {
-      return null;
-    }
-  }
-  return req.body;
 }
 
 function buildAnalysisPrompt(trip: AnalyzeRequest): string {
@@ -147,26 +136,36 @@ Please provide a structured, beautifully formatted response in Markdown addressi
 Make your tone professional, authoritative, and encouraging. Use elegant spacing, bold headings, and clear bullet points. Refer to real Philippine motorcycling cultural terms like "kamote riders", "vulcanizing shop", "carinderia", "kapote", "RoRo ferry", and "RFID".`;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Content-Type", "application/json");
-
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ error: "Method not allowed." });
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method !== "POST") {
+    return Response.json({ error: "Method not allowed." }, { status: 405 });
   }
 
   try {
-    const parsed = analyzeRequestSchema.safeParse(parseBody(req));
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+
+    const parsed = analyzeRequestSchema.safeParse(body);
     if (!parsed.success) {
-      return res.status(400).json({ error: "Invalid request. Check trip fields and try again." });
+      return Response.json(
+        { error: "Invalid request. Check trip fields and try again." },
+        { status: 400 }
+      );
     }
 
     const apiKey = getGeminiApiKey();
     if (!apiKey) {
-      return res.status(503).json({
-        error:
-          "AI analysis is unavailable. Set GEMINI_API_KEY in Vercel Environment Variables (Production), then Redeploy.",
-      });
+      return Response.json(
+        {
+          error:
+            "AI analysis is unavailable. Set GEMINI_API_KEY in Vercel Environment Variables (Production), then Redeploy.",
+        },
+        { status: 503 }
+      );
     }
 
     const ai = new GoogleGenAI({
@@ -184,18 +183,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     const analysis = response.text || "No analysis generated. Please try again.";
-    return res.status(200).json({ analysis });
+    return Response.json({ analysis });
   } catch (error: unknown) {
     console.error("Gemini API error:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to generate analysis. Please try again later.";
-    // Surface a safe, short message so the UI is actionable (no secrets).
-    const safeMessage =
-      /api key|permission|unauthorized|401|403/i.test(message)
-        ? "Gemini rejected the API key. Check GEMINI_API_KEY in Vercel and regenerate the key if needed."
-        : /model|not found|404/i.test(message)
-          ? "Gemini model is unavailable. Please try again later."
-          : "Failed to generate analysis. Please try again later.";
-    return res.status(500).json({ error: safeMessage });
+    const message = error instanceof Error ? error.message : "";
+    const safeMessage = /api key|permission|unauthorized|401|403/i.test(message)
+      ? "Gemini rejected the API key. Check GEMINI_API_KEY in Vercel and regenerate the key if needed."
+      : /model|not found|404/i.test(message)
+        ? "Gemini model is unavailable. Please try again later."
+        : "Failed to generate analysis. Please try again later.";
+    return Response.json({ error: safeMessage }, { status: 500 });
   }
 }

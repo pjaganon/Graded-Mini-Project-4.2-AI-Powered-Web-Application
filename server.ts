@@ -5,8 +5,8 @@ import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { analyzeRequestSchema } from "./src/validation.ts";
-import { generateTripAnalysis, getGeminiApiKey } from "./src/geminiAnalysis.ts";
+import { analyzeRequestSchema } from "./src/validation";
+import { generateTripAnalysis, getGeminiApiKey } from "./src/geminiAnalysis";
 
 const envPath = path.join(path.dirname(fileURLToPath(import.meta.url)), ".env");
 
