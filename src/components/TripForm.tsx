@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from "react";
 import { TripBudget, DistanceUnit, FuelEconomyUnit, FuelPriceUnit, PassengerMode, MOTORCYCLE_SUGGESTIONS, ROUTE_TYPES, RIDING_STYLES } from "../types";
-import { Bike, Navigation, DollarSign, Calendar, Landmark, Settings, Sliders, ChevronRight, Save, Compass } from "lucide-react";
+import { Bike, Navigation, DollarSign, Calendar, Landmark, Settings, Sliders, Save, Compass } from "lucide-react";
 
 interface TripFormProps {
   activeTrip: TripBudget;
@@ -129,25 +129,16 @@ export const TripForm: React.FC<TripFormProps> = ({ activeTrip, onChangeTrip, on
   return (
     <div id="trip-form-container" className="bg-[#151515] border border-[#222] p-6 rounded-2xl flex flex-col h-full">
       {/* Title block */}
-      <div className="flex justify-between items-start mb-6">
-        <div className="min-w-0">
-          <input
-            type="text"
-            name="tripName"
-            value={activeTrip.tripName}
-            onChange={handleTextChange}
-            placeholder="E.g., Marilaque Twisties or Cordillera Loop"
-            className="text-xl font-black bg-transparent border-b border-dashed border-zinc-800 hover:border-zinc-700 focus:border-amber-500 text-white placeholder-zinc-600 py-1 focus:outline-none w-full font-sans tracking-tight"
-          />
-          <span className="text-[10px] text-zinc-500 mt-1 block uppercase tracking-wider">Click name to rename trip</span>
-        </div>
-        <button
-          onClick={onSaveTrip}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/10 cursor-pointer uppercase tracking-wider"
-        >
-          <Save className="w-3.5 h-3.5" />
-          Save Trip
-        </button>
+      <div className="mb-6">
+        <input
+          type="text"
+          name="tripName"
+          value={activeTrip.tripName}
+          onChange={handleTextChange}
+          placeholder="E.g., Marilaque Twisties or Cordillera Loop"
+          className="text-xl font-black bg-transparent border-b border-dashed border-zinc-800 hover:border-zinc-700 focus:border-amber-500 text-white placeholder-zinc-600 py-1 focus:outline-none w-full font-sans tracking-tight"
+        />
+        <span className="text-[10px] text-zinc-500 mt-1 block uppercase tracking-wider">Click name to rename trip</span>
       </div>
 
       {/* Tabs */}
@@ -404,11 +395,11 @@ export const TripForm: React.FC<TripFormProps> = ({ activeTrip, onChangeTrip, on
             <div className="flex justify-end pt-2">
               <button
                 type="button"
-                onClick={() => setActiveTab("expenses")}
-                className="px-4 py-2 bg-[#0A0A0A] border border-zinc-800 hover:border-zinc-700 hover:bg-[#0F0F0F] text-zinc-300 rounded-xl text-xs font-bold flex items-center gap-1 cursor-pointer transition-all uppercase tracking-wider"
+                onClick={onSaveTrip}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/10 cursor-pointer uppercase tracking-wider"
               >
-                Continue to Expenses
-                <ChevronRight className="w-3.5 h-3.5" />
+                <Save className="w-3.5 h-3.5" />
+                Save Trip
               </button>
             </div>
           </div>
