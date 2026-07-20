@@ -127,7 +127,7 @@ export const TripForm: React.FC<TripFormProps> = ({ activeTrip, onChangeTrip, on
   const totalExpense = Object.values(activeTrip.expenses).reduce((a, b) => a + b, 0);
 
   return (
-    <div id="trip-form-container" className="bg-[#151515] border border-[#222] p-6 rounded-2xl flex flex-col h-full">
+    <div id="trip-form-container" className="bg-[#151515] border border-[#222] p-6 rounded-2xl flex flex-col">
       {/* Title block */}
       <div className="mb-6">
         <input
@@ -168,7 +168,7 @@ export const TripForm: React.FC<TripFormProps> = ({ activeTrip, onChangeTrip, on
       </div>
 
       {/* Form Content */}
-      <div className="flex-1 overflow-y-auto pr-1 max-h-[500px]">
+      <div className="flex-1 pr-1">
         {activeTab === "params" ? (
           <div className="space-y-5">
             {/* Presets Dropdown */}
@@ -597,10 +597,11 @@ export const TripForm: React.FC<TripFormProps> = ({ activeTrip, onChangeTrip, on
               </div>
               <button
                 type="button"
-                onClick={() => setActiveTab("params")}
-                className="px-4 py-2 bg-[#0A0A0A] border border-zinc-800 hover:border-zinc-700 hover:bg-[#0F0F0F] text-zinc-300 rounded-xl text-xs font-bold transition-all uppercase tracking-wider"
+                onClick={onSaveTrip}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-black rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-amber-500/10 cursor-pointer uppercase tracking-wider"
               >
-                Back to Parameters
+                <Save className="w-3.5 h-3.5" />
+                Save Trip
               </button>
             </div>
           </div>
