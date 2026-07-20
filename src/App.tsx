@@ -362,9 +362,6 @@ export default function App() {
             <div>
               <h1 className="text-xl font-bold uppercase tracking-tight text-white flex items-center gap-2">
                 MotoBudget
-                <span className="text-amber-500 font-black">
-                  AI
-                </span>
               </h1>
               <p className="text-xs text-zinc-500 mt-0.5">
                 Calculate accurate fuel, tolls, and emergency buffers tailored to your motorcycle and riding style.
@@ -406,6 +403,17 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: Form Editor & Saved Trips list (8 cols on lg) */}
           <div className="lg:col-span-7 space-y-6 flex flex-col">
+            <div className="bg-[#0F0F0F] border border-[#222] rounded-2xl p-5">
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Compass className="w-4 h-4 text-amber-500" />
+                Quick How-To
+              </h2>
+              <ul className="space-y-1.5 text-xs text-zinc-400 list-disc pl-4 marker:text-amber-500">
+                <li>Fill in your trip details, motorcycle model, and expense categories.</li>
+                <li>Save the trip, then use the <span className="text-zinc-200">AI Budget Assistant</span> for more tips.</li>
+                <li>Compare saved trips, or export/import backups anytime.</li>
+              </ul>
+            </div>
             <div className="flex-1">
               <TripForm
                 activeTrip={activeTrip}
