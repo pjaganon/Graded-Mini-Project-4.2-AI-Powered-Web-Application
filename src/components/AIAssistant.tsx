@@ -88,13 +88,32 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({ activeTrip, onUpdateAn
         body: JSON.stringify(requestPayload),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate AI analysis.");
+      const contentType = response.headers.get("content-type") || "";
+      const rawBody = await response.text();
+
+      let payload: { error?: string; analysis?: string } | null = null;
+      if (contentType.includes("application/json") && rawBody) {
+        try {
+          payload = JSON.parse(rawBody);
+        } catch {
+          payload = null;
+        }
       }
 
-      const data = await response.json();
-      onUpdateAnalysis(data.analysis);
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ||
+            (response.status === 404
+              ? "AI API route is missing on this deployment. Redeploy with the /api serverless function and set GEMINI_API_KEY."
+              : "Failed to generate AI analysis.")
+        );
+      }
+
+      if (!payload?.analysis) {
+        throw new Error("Unexpected response from the AI service. Please try again.");
+      }
+
+      onUpdateAnalysis(payload.analysis);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "An unexpected error occurred while communicating with the server.");

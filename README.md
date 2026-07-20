@@ -18,3 +18,9 @@ View your app in AI Studio: https://ai.studio/apps/c360130d-62fe-4357-ac51-3b830
 2. Copy `.env.example` to `.env` and set your `GEMINI_API_KEY` (get one at https://aistudio.google.com/apikey)
 3. Run the app:
    `npm run dev`
+
+## Deploy on Vercel
+
+1. Import this GitHub repo in Vercel.
+2. Add Environment Variable `GEMINI_API_KEY` (same key as local `.env`).
+3. Redeploy. The AI assistant uses the serverless route at `/api/gemini/analyze`.
