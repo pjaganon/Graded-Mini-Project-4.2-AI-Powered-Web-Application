@@ -168,20 +168,37 @@ export default {
         },
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: buildAnalysisPrompt(parsed.data),
-      });
+      const prompt = buildAnalysisPrompt(parsed.data);
+      const modelsToTry = ["gemini-3.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
+      let analysis = "";
+      let lastError = null;
 
-      const analysis = response.text || "No analysis generated. Please try again.";
+      for (const model of modelsToTry) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+          });
+          analysis = response.text || "";
+          if (analysis) break;
+        } catch (err) {
+          lastError = err;
+          console.error(`Gemini model failed (${model}):`, err);
+        }
+      }
+
+      if (!analysis) {
+        throw lastError || new Error("No analysis generated.");
+      }
+
       return Response.json({ analysis });
     } catch (error) {
       console.error("Gemini API error:", error);
-      const message = error instanceof Error ? error.message : "";
-      const safeMessage = /api key|permission|unauthorized|401|403/i.test(message)
+      const message = error instanceof Error ? error.message : String(error);
+      const safeMessage = /api key|permission|unauthorized|401|403|API_KEY_INVALID/i.test(message)
         ? "Gemini rejected the API key. Check GEMINI_API_KEY in Vercel and regenerate the key if needed."
-        : /model|not found|404/i.test(message)
-          ? "Gemini model is unavailable. Please try again later."
+        : /not found|NOT_FOUND|invalid model|model/i.test(message)
+          ? "Gemini model is unavailable for this API key. Try gemini-2.0-flash or check AI Studio model access."
           : "Failed to generate analysis. Please try again later.";
       return Response.json({ error: safeMessage }, { status: 500 });
     }
